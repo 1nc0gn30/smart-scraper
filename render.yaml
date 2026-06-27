@@ -1,0 +1,26 @@
+# Render Blueprint for the Python FastAPI backend
+# Deploy with: Render will detect render.yaml automatically when connected to the repo.
+# Or manually create a Web Service pointing at the python-backend folder.
+
+services:
+  - type: web
+    name: streamlit-netlify-scraper-api
+    env: python
+    region: oregon
+    plan: free
+    rootDir: python-backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: REQUEST_TIMEOUT
+        value: 20
+      # Set these in the Render dashboard (never commit real values)
+      - key: API_KEY
+        sync: false
+      # IMPORTANT for production: set to your Netlify URL, e.g.
+      # https://your-site.netlify.app,https://another-site.netlify.app
+      - key: ALLOWED_ORIGINS
+        value: "*"
+    autoDeploy: true

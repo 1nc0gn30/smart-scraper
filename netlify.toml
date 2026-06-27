@@ -1,0 +1,20 @@
+[build]
+  publish = "frontend"
+  functions = "netlify/functions"
+
+[dev]
+  targetPort = 8888
+  publish = "frontend"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Recommended security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

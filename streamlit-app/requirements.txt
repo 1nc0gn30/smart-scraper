@@ -1,0 +1,7 @@
+streamlit>=1.32
+pandas>=2.2
+requests>=2.31
+beautifulsoup4>=4.12
+lxml>=5.1
+python-dotenv>=1.0
+html5lib>=1.1  # for pandas.read_html tables support

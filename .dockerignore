@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+*.pyc
+
+# Virtualenvs
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# Node / Netlify (not needed for python containers)
+node_modules/
+package-lock.json
+
+# Git and IDE
+.git/
+.gitignore
+.idea/
+.vscode/
+
+# Docs and misc
+docs/
+*.md
+LICENSE
+.dockerignore
+
+# Local env
+.env
+.env.*
+*.log
+
+# Test / cache
+__pycache__
+*.pytest_cache/
+.coverage
+htmlcov/

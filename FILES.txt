@@ -1,0 +1,54 @@
+# StreamlitNetlifyCollab - Enhanced v2
+
+## Full Project Tree
+
+.
+├── .env.example
+├── README.md
+├── netlify.toml
+├── FILES.txt
+│
+├── frontend/
+│   ├── index.html              # Majorly enhanced: URL/keyword toggle, 6 tasks, table view, CSV/JSON, history, auth UX
+│   └── .env.example
+│
+├── netlify/
+│   └── functions/
+│       └── processTask.js      # Cleaned + improved JWT verification, supports query+mode, forwards API key
+│
+├── python-backend/
+│   ├── main.py                 # FastAPI: /analyze + /scrape, uses shared core, API key protection
+│   ├── scraper.py              # ★ Core reusable module: 6 tasks, search scraping, pandas tables
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── streamlit-app/
+│   ├── app.py                  # Full-featured Streamlit UI reusing scraper.py directly or via FastAPI
+│   ├── scraper.py              # Local copy of the core for standalone use
+│   └── requirements.txt
+│
+└── docs/ (empty)
+
+## Key Enhancements from Original MVP
+
+- Keyword / search term input mode (DuckDuckGo HTML + follow-up analysis)
+- Two additional professional tasks: `meta` and `tables` (pandas.read_html)
+- Complete modular separation (scraper.py)
+- Dedicated Streamlit dashboard (the project name now makes full sense)
+- Fixed + dramatically improved downloads, views, and UX
+- Robust auth proxy
+- Proper env configuration examples
+
+## Quick Local Commands
+
+```bash
+# Python backend
+cd python-backend && python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+
+# Netlify
+netlify dev
+
+# Streamlit companion
+cd streamlit-app && pip install -r requirements.txt && streamlit run app.py
+```

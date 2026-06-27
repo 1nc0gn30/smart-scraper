@@ -1,0 +1,12 @@
+{
+  "name": "streamlit-netlify-collab",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Netlify + Python collaboration demo (Smart Scraper)",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build step for static frontend'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
