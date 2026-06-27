@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtualenvs
+.venv
+venv
+ENV
+env
+.python-version
+
+# Node / Netlify
+node_modules/
+.netlify/
+npm-debug.log*
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+secrets/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# Logs
+*.log
+logs/
+
+# Misc
+*.zip
+*.tar.gz
+
+# OS/editor debris
+*~
+*.orig
+*.rej
+
+# Coverage / testing
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# TypeScript / frontend builds (if added later)
+dist/
+out/
+
+# Docker
+docker-compose.override.yml
+
+# Jupyter
+.ipynb_checkpoints
