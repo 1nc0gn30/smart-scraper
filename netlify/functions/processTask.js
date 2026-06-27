@@ -110,15 +110,25 @@ export const handler = async (event) => {
     };
   }
 
-  // 1. Auth: require Netlify Identity JWT
-  const authHeader =
-    (event.headers.authorization || event.headers.Authorization || "").trim();
+  // 1. Auth: require Netlify Identity JWT (headers can be lowercased by the platform)
+  const headers = Object.fromEntries(
+    Object.entries(event.headers || {}).map(([k, v]) => [k.toLowerCase(), v])
+  );
+  const authHeader = (headers.authorization || "").trim();
+
+  if (!authHeader) {
+    return {
+      statusCode: 401,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Authentication required. Please log in." }),
+    };
+  }
 
   if (!authHeader.startsWith("Bearer ")) {
     return {
       statusCode: 401,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Authentication required. Please log in." }),
+      body: JSON.stringify({ error: "Invalid auth scheme. Use Bearer token." }),
     };
   }
 
