@@ -102,6 +102,14 @@ async function callPythonBackend(body) {
 }
 
 export const handler = async (event) => {
+  if (event.httpMethod === "GET") {
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ok: true, route: "processTask", method: "GET", message: "Use POST from the app." }),
+    };
+  }
+
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
