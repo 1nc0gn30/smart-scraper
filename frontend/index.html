@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Scraper • StreamlitNetlifyCollab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { color-scheme: dark; }
+        body {
+            background: #0a0f1e;
+            color: #e6e9ff;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* === DIGITAL EYE CANDY BACKGROUNDS === */
+        .bg-grid {
+            background-image: 
+                linear-gradient(rgba(99,102,241,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99,102,241,0.035) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+        }
+
+        .bg-scanline {
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(103, 232, 249, 0.015) 50%
+            );
+            background-size: 100% 6px;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 200px; }
+        }
+
+        .bg-data {
+            background-image: 
+                radial-gradient(circle at 25% 30%, rgba(165, 180, 252, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 75% 70%, rgba(103, 232, 249, 0.05) 0%, transparent 55%);
+            pointer-events: none;
+        }
+
+        .floating-asset {
+            position: absolute;
+            opacity: 0.08;
+            pointer-events: none;
+            animation: floatSlow 22s ease-in-out infinite;
+            z-index: 1;
+        }
+        .floating-asset:nth-child(2n) { animation-duration: 31s; animation-delay: -8s; }
+        .floating-asset:nth-child(3n) { animation-duration: 18s; }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(22px, -18px) rotate(4deg); }
+        }
+
+        .pixel-dot {
+            width: 3px;
+            height: 3px;
+            background: #6366f1;
+            opacity: 0.12;
+            position: absolute;
+            animation: twinkle 3.5s infinite;
+        }
+
+        .data-stream {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                180deg,
+                transparent 0%,
+                rgba(103,232,249,0.03) 20%,
+                transparent 80%
+            );
+            background-size: 3px 180px;
+            animation: stream 1.6s linear infinite;
+            pointer-events: none;
+            opacity: 0.6;
+            z-index: 0;
+        }
+
+        @keyframes stream {
+            0% { background-position: 0 -200px; }
+            100% { background-position: 0 400px; }
+        }
+
+        /* === ENHANCED GLASS + ENGAGEMENT === */
+        .glass {
+            background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015));
+            border: 1px solid rgba(255,255,255,0.09);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 40%;
+            height: 200%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(165,180,252,0.08),
+                transparent
+            );
+            transform: skewX(-20deg);
+            animation: sheen 5.5s infinite;
+            pointer-events: none;
+        }
+        @keyframes sheen {
+            0% { transform: translateX(-120%) skewX(-20deg); }
+            25% { transform: translateX(300%) skewX(-20deg); }
+            100% { transform: translateX(300%) skewX(-20deg); }
+        }
+
+        .section-title { letter-spacing: -.015em; }
+
+        .btn {
+            transition: transform .1s ease, filter .1s ease, background .1s ease, box-shadow .1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:hover:not(:disabled) { 
+            transform: translateY(-1px); 
+            filter: brightness(1.08);
+            box-shadow: 0 0 0 1px rgba(99,102,241,0.4);
+        }
+        .btn:active:not(:disabled) { transform: scale(0.985); }
+
+        .result-card {
+            transition: transform .1s ease, box-shadow .1s ease, border-color .1s;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .result-card:hover { 
+            transform: translateY(-1px);
+            border-color: rgba(165,180,252,0.3);
+        }
+
+        .spinner {
+            border: 2px solid rgba(255,255,255,.15);
+            border-top-color: #6366f1;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .nav-active { background: rgba(99, 102, 241, .12); color: #c0c4ff; }
+        pre { white-space: pre-wrap; }
+
+        .task-pill {
+            font-size: 10px;
+            padding: 1px 8px;
+            border-radius: 999px;
+            background: rgba(99,102,241,.15);
+            color: #a5b4fc;
+        }
+
+        /* Pixel sparkles & engagement candy */
+        .pixel-sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #67e8f9;
+            box-shadow: 0 0 6px #67e8f9;
+            animation: sparkle 700ms forwards;
+            pointer-events: none;
+            z-index: 50;
+        }
+        @keyframes sparkle {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.1); opacity: 0; }
+        }
+
+        /* Mini pixel icons for extra visual candy */
+        .pixel-mini-icon {
+            font-family: ui-monospace, monospace;
+            font-size: 11px;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15,23,42,0.6);
+            border: 1px solid rgba(165,180,252,0.15);
+            border-radius: 4px;
+            color: #64748b;
+            transition: all 0.1s ease;
+        }
+        .pixel-mini-icon:hover {
+            background: rgba(103,232,249,0.1);
+            color: #67e8f9;
+            border-color: rgba(103,232,249,0.3);
+            transform: scale(1.1);
+        }
+
+        /* Character container styles */
+        .pixel-character {
+            image-rendering: pixelated;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+            transition: transform 0.2s ease;
+        }
+        .pixel-character:hover {
+            transform: scale(1.03);
+        }
+
+        .character-bubble {
+            font-size: 10px;
+            padding: 3px 9px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(103,232,249,0.3);
+            border-radius: 999px;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative">
+    <!-- === BACKGROUND DIGITAL ASSETS & EYE CANDY === -->
+    <div class="fixed inset-0 z-0 bg-grid bg-scanline bg-data"></div>
+    <div class="fixed inset-0 z-0 data-stream"></div>
+
+    <!-- Floating pixel-style digital assets (many decorative elements) -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <!-- Drifting code brackets & data glyphs -->
+        <div class="floating-asset text-[38px] text-indigo-400/20 font-mono" style="left:8%; top:12%; animation-delay:-4s;">&lt;/&gt;</div>
+        <div class="floating-asset text-[27px] text-cyan-400/20" style="left:19%; top:68%;">⬡</div>
+        <div class="floating-asset text-[44px] text-indigo-400/20 font-mono" style="right:14%; top:18%; animation-duration:27s;">{ }</div>
+        <div class="floating-asset text-[22px] text-violet-400/20" style="left:73%; top:82%;">◉</div>
+        
+        <!-- Pixel dots and small shapes -->
+        <div class="pixel-dot" style="left:12%; top:22%; animation-delay:120ms;"></div>
+        <div class="pixel-dot" style="left:31%; top:41%; animation-delay:840ms;"></div>
+        <div class="pixel-dot" style="left:67%; top:14%; animation-delay:300ms;"></div>
+        <div class="pixel-dot" style="right:11%; top:61%; animation-delay:1350ms;"></div>
+        <div class="pixel-dot" style="left:84%; top:77%; animation-delay:520ms;"></div>
+        <div class="pixel-dot" style="left:22%; top:81%; animation-delay:2100ms;"></div>
+        <div class="pixel-dot" style="right:44%; top:8%; animation-delay:950ms;"></div>
+
+        <!-- More eye candy: tiny data fragments + new motifs -->
+        <div class="floating-asset text-xs tracking-[4px] text-indigo-300/20 font-mono" style="left:4%; top:46%;">0100110</div>
+        <div class="floating-asset text-[13px] text-cyan-300/10 font-mono" style="right:26%; top:39%;">SCRAPE</div>
+        <div class="floating-asset text-sm text-indigo-400/10" style="left:54%; top:9%; transform:rotate(-14deg);">pandas</div>
+        <div class="floating-asset text-[10px] tracking-widest text-white/10" style="left:89%; top:53%;">NETLIFY</div>
+        <div class="floating-asset text-[9px] text-violet-300/20 font-mono" style="left:25%; top:26%;">FASTAPI</div>
+        <div class="floating-asset text-lg text-indigo-300/10" style="right:6%; top:71%;">⟐</div>
+        <div class="floating-asset text-[8px] text-cyan-300/15 font-mono" style="left:77%; top:47%; animation-duration:19s;">JSON</div>
+        <div class="floating-asset text-[15px] text-emerald-300/15" style="left:36%; top:15%; animation-duration:29s;">▣</div>
+        <div class="floating-asset text-[21px] text-indigo-300/15" style="right:19%; top:63%;">◆</div>
+        
+        <!-- Decorative horizontal scan bars -->
+        <div class="absolute left-[10%] right-[20%] h-px bg-gradient-to-r from-transparent via-indigo-400/10 to-transparent" style="top: 31%;"></div>
+        <div class="absolute left-[35%] right-[8%] h-px bg-gradient-to-r from-transparent via-cyan-300/10 to-transparent" style="top: 74%;"></div>
+        <div class="absolute left-[55%] right-[25%] h-px bg-gradient-to-r from-transparent via-violet-300/10 to-transparent" style="top: 53%;"></div>
+    </div>
+
+    <div class="relative z-10 mx-auto max-w-7xl px-4 py-8">
+        <!-- Navbar -->
+        <header class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-500 text-white shadow-inner">
+                    <span class="font-bold text-xl tracking-[-1px]">SN</span>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-2">
+                        <h1 class="text-2xl font-semibold tracking-tighter">Smart Scraper</h1>
+                        <span class="task-pill font-medium">v2</span>
+                    </div>
+                    <p class="text-[11px] text-indigo-200/60 -mt-0.5">Netlify + FastAPI + Streamlit collab</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div id="auth-area" class="flex items-center gap-3"></div>
+                <a href="https://github.com/1nc0gn30/smart-scraper" target="_blank"
+                   class="text-xs px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white/5 hidden md:block">GitHub</a>
+            </div>
+        </header>
+
+        <div class="grid gap-8 lg:grid-cols-12">
+            <!-- Main content area -->
+            <div class="lg:col-span-7 xl:col-span-8">
+                <div class="space-y-4">
+                    <div>
+                        <h2 class="text-4xl font-semibold tracking-tighter leading-none section-title">
+                            Python power.<br>Netlify speed.
+                        </h2>
+                        <p class="mt-3 text-indigo-200/70 text-[15px]">
+                            Authenticated frontend calls a secure Netlify Function which proxies to a FastAPI
+                            backend that performs real scraping + pandas analysis.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <div class="px-3 py-1 rounded-full bg-white/5 border border-white/10">Real requests + BS4</div>
+                        <div class="px-3 py-1 rounded-full bg-white/5 border border-white/10">pandas tables</div>
+                        <div class="px-3 py-1 rounded-full bg-white/5 border border-white/10">CSV / JSON export</div>
+                        <div class="px-3 py-1 rounded-full bg-white/5 border border-white/10">Reusable core</div>
+                    </div>
+                </div>
+
+                <!-- Info cards -->
+                <div class="mt-8 grid grid-cols-1 gap-3 text-sm">
+                    <div class="glass rounded-2xl p-4">
+                        <div class="font-medium mb-1">Hybrid Architecture</div>
+                        <div class="text-xs text-indigo-200/70 leading-relaxed">
+                            Netlify Identity → protected Function → FastAPI (Render/anywhere)
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-4">
+                        <div class="font-medium mb-1">Works with Streamlit too</div>
+                        <div class="text-xs text-indigo-200/70">
+                            The exact same <span class="font-mono text-indigo-300">scraper.py</span> module powers a separate Streamlit dashboard.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Panel -->
+            <div class="lg:col-span-7">
+                <div class="glass rounded-3xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="uppercase text-[10px] tracking-[1px] text-indigo-300/70 font-medium">Input</div>
+                        <div id="login-hint" class="hidden text-xs text-amber-300/90">Login required for real runs</div>
+                    </div>
+
+                    <!-- Mode toggle -->
+                    <div class="flex rounded-2xl bg-black/40 p-1 w-fit mb-4">
+                        <button type="button" id="mode-url-btn"
+                            class="nav-active px-4 py-1 text-sm rounded-[14px] font-medium">URL</button>
+                        <button type="button" id="mode-keyword-btn"
+                            class="px-4 py-1 text-sm rounded-[14px] font-medium text-indigo-200/70 hover:text-indigo-100">Keyword / Search</button>
+                    </div>
+
+                    <form id="task-form" class="space-y-4">
+                        <!-- URL Input -->
+                        <div id="url-group">
+                            <label class="text-xs text-indigo-200/60 block mb-1.5 font-medium">Public URL</label>
+                            <input id="url-input" type="url" placeholder="https://news.ycombinator.com"
+                                   class="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm outline-none focus:border-indigo-400/70 placeholder:text-indigo-300/40" />
+                        </div>
+
+                        <!-- Keyword Input -->
+                        <div id="keyword-group" class="hidden">
+                            <label class="text-xs text-indigo-200/60 block mb-1.5 font-medium">Search term or topic</label>
+                            <input id="query-input" type="text" placeholder="AI regulation 2025" value="latest AI news"
+                                   class="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm outline-none focus:border-indigo-400/70" />
+                            <div class="text-[10px] text-indigo-200/50 mt-1">We run a light DuckDuckGo scrape then apply your chosen task to the top result.</div>
+                        </div>
+
+                        <!-- Task select -->
+                        <div>
+                            <label class="text-xs text-indigo-200/60 block mb-1.5 font-medium">Analysis Task</label>
+                            <select id="task-select"
+                                class="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm outline-none focus:border-indigo-400/70">
+                                <option value="headlines">Headlines (H1/H2/H3)</option>
+                                <option value="prices">Prices &amp; Offers</option>
+                                <option value="links">All Links (with domains)</option>
+                                <option value="summary">Key Paragraphs (summary)</option>
+                                <option value="meta">Page Metadata + OG tags</option>
+                                <option value="tables">HTML Tables (pandas powered)</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center gap-3 pt-1">
+                            <button type="submit" id="run-btn"
+                                class="btn flex-1 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 font-semibold rounded-2xl py-3 text-white flex items-center justify-center gap-2">
+                                <span id="run-label">Run Analysis</span>
+                            </button>
+
+                            <button type="button" id="demo-btn"
+                                class="btn px-5 py-3 border border-white/15 rounded-2xl text-sm font-medium hover:bg-white/5">
+                                Demo Data
+                            </button>
+                        </div>
+
+                        <div id="status-line" class="text-xs h-4 text-indigo-300/80"></div>
+                    </form>
+
+                    <div id="error-banner" class="hidden mt-3 text-sm rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-red-300"></div>
+                </div>
+
+                <div class="text-[10px] text-indigo-200/40 mt-2 px-1">
+                    Authenticated via Netlify Identity. Your token never reaches the Python backend directly.
+                </div>
+                <div id="local-tip" class="text-[10px] text-amber-400/70 mt-1 px-1">
+                    Local dev tip: Click <strong>Demo Data</strong> instantly, or Log in (works via <code>netlify dev</code>).
+                </div>
+            </div>
+
+            <!-- === PIXEL SPRITE COMPANION + ENGAGEMENT ASSETS === -->
+            <div class="lg:col-span-5 xl:col-span-4 flex flex-col items-center lg:items-end gap-4 relative pt-2">
+                <!-- Scrapy the Pixel Character -->
+                <div class="relative group">
+                    <div class="flex flex-col items-center">
+                        <!-- Character status / speech -->
+                        <div id="character-bubble" 
+                             class="character-bubble text-cyan-300/90 mb-1 px-3 py-0.5 text-center opacity-90 transition-all">
+                            <span id="bubble-text">hi! ready to scrape?</span>
+                        </div>
+
+                        <!-- The Pixel Sprite Canvas -->
+                        <div class="relative">
+                            <canvas id="scrapy-canvas" width="96" height="96" 
+                                    class="pixel-character cursor-pointer rounded-xl bg-[#0f1629]/70 border border-indigo-400/20"
+                                    title="Click me!"></canvas>
+                            
+                            <!-- Extra pixel accessories / glow -->
+                            <div class="absolute -inset-1 rounded-2xl bg-indigo-500/10 blur-xl -z-10 group-hover:bg-indigo-400/15 transition-colors"></div>
+                        </div>
+
+                        <div class="mt-1 flex items-center gap-2">
+                            <div class="text-[9px] px-2 py-px rounded bg-white/5 text-indigo-300/70 border border-white/10 tracking-widest">SCRAPY</div>
+                            <div id="character-mood" 
+                                 class="text-[9px] px-2 py-px rounded-full bg-cyan-400/10 text-cyan-300/80 border border-cyan-400/20">IDLE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More digital assets: mini pixel engagement icons -->
+                <div class="hidden lg:flex flex-wrap justify-end gap-1.5 max-w-[210px]">
+                    <div class="pixel-mini-icon" title="Headlines">H1</div>
+                    <div class="pixel-mini-icon" title="Prices">$</div>
+                    <div class="pixel-mini-icon" title="Links">🔗</div>
+                    <div class="pixel-mini-icon" title="Tables">▦</div>
+                    <div class="pixel-mini-icon" title="Meta">OG</div>
+                </div>
+
+                <div class="text-[9px] text-indigo-300/50 tracking-wider text-right pr-1 hidden xl:block">
+                    8-BIT COMPANION
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <section id="results-section" class="mt-10 hidden">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-xl font-semibold tracking-tight">Results</h3>
+                        <span id="result-badge" class="task-pill text-xs"></span>
+                    </div>
+                    <div id="result-meta" class="text-xs text-indigo-300/60 mt-0.5"></div>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <button id="table-view-btn" class="btn text-xs border border-white/15 hover:bg-white/5 px-3 py-1.5 rounded-2xl">Table View</button>
+                    <button id="card-view-btn" class="btn text-xs border border-white/15 hover:bg-white/5 px-3 py-1.5 rounded-2xl">Cards</button>
+                    <button id="copy-btn" class="btn text-xs border border-white/15 hover:bg-white/5 px-3 py-1.5 rounded-2xl">Copy JSON</button>
+                    <button id="csv-btn" class="btn text-xs px-4 py-1.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10">Download CSV</button>
+                    <button id="json-btn" class="btn text-xs px-4 py-1.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10">Download JSON</button>
+                </div>
+            </div>
+
+            <div id="result-container" class="glass rounded-3xl p-5 min-h-[180px]">
+                <!-- Populated by JS -->
+            </div>
+
+            <div id="result-source" class="mt-2 text-[11px] text-indigo-300/50 px-1"></div>
+        </section>
+
+        <!-- History -->
+        <section id="history-section" class="mt-10 hidden">
+            <div class="flex items-center justify-between mb-3">
+                <div class="text-sm font-medium px-1 text-indigo-200/90">Recent runs (this browser)</div>
+                <button id="clear-history" class="text-xs px-3 py-1 rounded-xl border border-white/10 hover:bg-white/5">Clear</button>
+            </div>
+            <div id="history-list" class="grid gap-2 md:grid-cols-2"></div>
+        </section>
+
+        <footer class="mt-14 text-center text-xs text-indigo-200/40">
+            StreamlitNetlifyCollab — FastAPI + Netlify demo. The same Python logic runs in Streamlit.
+        </footer>
+    </div> <!-- end relative z-10 container -->
+    </div> <!-- end background layers -->
+
+    <!-- Netlify Identity -->
+    <script src="https://identity.netlify.com/v1/netlify-identity.js"></script>
+    <script>
+        // Tailwind script run
+        function initTailwind() {
+            // already via CDN
+        }
+
+        // Auth handling
+        let currentUser = null;
+
+        function getToken() {
+            return currentUser?.token?.access_token || "";
+        }
+
+        function renderAuthArea() {
+            const container = document.getElementById("auth-area");
+            if (!container) return;
+
+            if (currentUser) {
+                const email = currentUser.email || (currentUser.user_metadata && currentUser.user_metadata.full_name) || "User";
+                container.innerHTML = `
+                    <div class="flex items-center gap-2 text-sm">
+                        <div class="text-right leading-tight">
+                            <div class="text-indigo-200/90">${escapeHtml(email)}</div>
+                            <div class="text-[10px] text-indigo-300/50 -mt-px">logged in</div>
+                        </div>
+                        <button id="logout-btn" class="text-xs px-4 py-1.5 border border-white/20 rounded-2xl hover:bg-white/5">Log out</button>
+                    </div>
+                `;
+                document.getElementById("logout-btn").onclick = () => window.netlifyIdentity && window.netlifyIdentity.logout();
+            } else {
+                container.innerHTML = `
+                    <button id="login-btn"
+                            class="bg-white text-[#0a0f1e] text-sm font-semibold px-5 py-2 rounded-2xl active:scale-[0.985]">
+                        Log in with Netlify Identity
+                    </button>
+                `;
+                document.getElementById("login-btn").onclick = () => window.netlifyIdentity && window.netlifyIdentity.open("login");
+            }
+        }
+
+        function updateLoginState() {
+            const runBtn = document.getElementById("run-btn");
+            const hint = document.getElementById("login-hint");
+            const isLogged = !!currentUser;
+
+            if (runBtn) {
+                runBtn.disabled = !isLogged;
+                runBtn.classList.toggle("opacity-60", !isLogged);
+                runBtn.classList.toggle("cursor-not-allowed", !isLogged);
+            }
+            if (hint) hint.classList.toggle("hidden", isLogged);
+        }
+
+        // Utility
+        function escapeHtml(str) {
+            return String(str || "").replace(/[&<>"']/g, m => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+            }[m]));
+        }
+
+        function setLoading(isLoading, label = "Analyzing...") {
+            const btn = document.getElementById("run-btn");
+            const labelEl = document.getElementById("run-label");
+            const status = document.getElementById("status-line");
+            if (!btn || !labelEl) return;
+
+            if (isLoading) {
+                btn.disabled = true;
+                labelEl.textContent = label;
+                btn.classList.add("opacity-75");
+                if (status) status.textContent = "Contacting secure proxy...";
+                document.dispatchEvent(new CustomEvent('scrapy:scanning'));
+            } else {
+                btn.disabled = !currentUser;
+                labelEl.textContent = "Run Analysis";
+                btn.classList.remove("opacity-75");
+                if (status) status.textContent = "";
+            }
+        }
+
+        function showError(msg) {
+            const banner = document.getElementById("error-banner");
+            banner.textContent = msg;
+            banner.classList.remove("hidden");
+        }
+
+        function clearError() {
+            const banner = document.getElementById("error-banner");
+            banner.textContent = "";
+            banner.classList.add("hidden");
+        }
+
+        async function callBackend(payload) {
+            const resp = await fetch("/.netlify/functions/processTask", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + getToken(),
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const text = await resp.text();
+            let json;
+            try { json = JSON.parse(text); } catch (e) { json = null; }
+
+            if (!resp.ok) {
+                const message = (json && json.error) || text || ("Request failed (" + resp.status + ")");
+                throw new Error(message);
+            }
+            return json;
+        }
+
+        // --- Renderers ---
+        let lastResult = null;
+        let viewMode = "cards"; // "cards" | "table"
+
+        function renderResults(data) {
+            const container = document.getElementById("result-container");
+            const meta = document.getElementById("result-meta");
+            const badge = document.getElementById("result-badge");
+            const sourceEl = document.getElementById("result-source");
+
+            container.innerHTML = "";
+            lastResult = data;
+
+            const task = data.task || "unknown";
+            const count = data.count || (data.headlines?.length || data.prices?.length || data.links?.length || data.paragraphs?.length || 0);
+
+            badge.textContent = task;
+            meta.innerHTML = `${escapeHtml(data.url || data.query || "")} · <span class="font-medium">${count}</span> items`;
+
+            if (data._auth) {
+                sourceEl.innerHTML = `Processed for <span class="font-medium">${escapeHtml(data._auth.user)}</span>`;
+            } else {
+                sourceEl.textContent = "";
+            }
+
+            // Render based on task
+            let html = "";
+
+            if (task === "headlines" && data.headlines) {
+                html = data.headlines.map(h => `
+                    <div class="result-card glass rounded-2xl p-4">
+                        <div class="text-xs uppercase font-semibold tracking-widest text-indigo-400/70">${h.tag}</div>
+                        <div class="mt-1 text-[15px] leading-snug">${escapeHtml(h.text)}</div>
+                    </div>
+                `).join("");
+            } else if (task === "prices" && data.prices) {
+                if (!data.prices.length) html = `<div class="text-indigo-300/60">No prices found.</div>`;
+                else html = data.prices.map(p => `
+                    <div class="result-card glass rounded-2xl px-4 py-3 flex justify-between items-center">
+                        <div class="font-semibold text-xl tracking-tight">${escapeHtml(p.price)}</div>
+                        <div class="text-xs text-indigo-300/70 max-w-[52%] text-right">${escapeHtml(p.context)}</div>
+                    </div>
+                `).join("");
+            } else if (task === "links" && data.links) {
+                html = data.links.map(l => `
+                    <div class="result-card glass rounded-2xl p-4 flex gap-4 items-start">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium leading-tight">${escapeHtml(l.title)}</div>
+                            <div class="text-xs break-all text-indigo-300/70 mt-0.5">${escapeHtml(l.url)}</div>
+                            <div class="text-[10px] text-indigo-400/70 mt-1">${escapeHtml(l.domain || "")}</div>
+                        </div>
+                        <a href="${escapeHtml(l.url)}" target="_blank" class="shrink-0 text-xs border px-2.5 py-1 rounded-xl border-white/10 hover:bg-white/5">Visit</a>
+                    </div>
+                `).join("");
+            } else if (task === "summary" && data.paragraphs) {
+                html = data.paragraphs.map(p => `
+                    <div class="result-card glass rounded-2xl p-4 text-[14.5px] leading-relaxed">${escapeHtml(p)}</div>
+                `).join("");
+            } else if (task === "meta" && data.meta) {
+                html = Object.entries(data.meta).map(([k,v]) => `
+                    <div class="result-card glass rounded-2xl px-4 py-3 flex gap-3 text-sm">
+                        <div class="font-mono w-32 shrink-0 text-indigo-400/80 text-xs pt-px">${escapeHtml(k)}</div>
+                        <div class="flex-1 break-words">${escapeHtml(v)}</div>
+                    </div>
+                `).join("");
+            } else if (task === "tables" && data.tables) {
+                html = data.tables.map((t, i) => `
+                    <div class="result-card glass rounded-2xl p-4 mb-3 last:mb-0">
+                        <div class="font-semibold mb-1">Table #${i + 1} <span class="text-xs text-indigo-300/70">(${t.rows || t.row_count_estimate || "?"} rows)</span></div>
+                        <div class="text-xs text-indigo-300/70">${(t.columns || []).join(" · ")}</div>
+                        <pre class="mt-2 p-3 text-[11px] bg-black/50 rounded-xl overflow-auto">${escapeHtml(JSON.stringify(t.preview || t.sample_rows || [], null, 2).slice(0,1400))}</pre>
+                    </div>
+                `).join("");
+            } else if (data.search_results) {
+                html = `<div class="mb-2 font-medium text-sm">Search Results</div>` + data.search_results.map(r => `
+                    <div class="result-card glass rounded-2xl p-4 mb-2 last:mb-0">
+                        <a href="${escapeHtml(r.url)}" target="_blank" class="font-medium">${escapeHtml(r.title)}</a>
+                        <div class="text-xs text-indigo-200/70 mt-1">${escapeHtml(r.snippet || "")}</div>
+                    </div>
+                `).join("");
+            } else {
+                html = `<pre class="mono text-xs overflow-auto p-4 bg-black/40 rounded-2xl">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+            }
+
+            container.innerHTML = html || `<div class="text-indigo-300/70">No structured data for this task.</div>`;
+            document.getElementById("results-section").classList.remove("hidden");
+        }
+
+        function switchView(mode) {
+            viewMode = mode;
+            if (!lastResult) return;
+            const container = document.getElementById("result-container");
+
+            if (mode === "table") {
+                const df = resultToTableData(lastResult);
+                if (df && df.length) {
+                    const headers = Object.keys(df[0]);
+                    let tableHTML = `<div class="overflow-auto"><table class="w-full text-sm"><thead><tr>`;
+                    headers.forEach(h => tableHTML += `<th class="text-left px-3 py-2 font-medium border-b border-white/10">${escapeHtml(h)}</th>`);
+                    tableHTML += `</tr></thead><tbody>`;
+                    df.forEach(row => {
+                        tableHTML += `<tr>`;
+                        headers.forEach(h => {
+                            tableHTML += `<td class="px-3 py-2 border-b border-white/5 align-top text-xs">${escapeHtml(String(row[h] || ""))}</td>`;
+                        });
+                        tableHTML += `</tr>`;
+                    });
+                    tableHTML += `</tbody></table></div>`;
+                    container.innerHTML = tableHTML;
+                } else {
+                    container.innerHTML = `<pre class="mono text-xs p-4">${escapeHtml(JSON.stringify(lastResult, null, 2))}</pre>`;
+                }
+            } else {
+                // re-render cards
+                renderResults(lastResult);
+            }
+        }
+
+        function resultToTableData(data) {
+            if (data.headlines) return data.headlines;
+            if (data.prices) return data.prices;
+            if (data.links) return data.links;
+            if (data.paragraphs) return data.paragraphs.map(p => ({ paragraph: p }));
+            if (data.search_results) return data.search_results;
+            if (data.meta) return [data.meta];
+            if (data.tables && data.tables[0]?.preview) return data.tables[0].preview;
+            return null;
+        }
+
+        function downloadCSV() {
+            if (!lastResult) return;
+            const rows = resultToTableData(lastResult) || [{ result: JSON.stringify(lastResult) }];
+
+            if (!Array.isArray(rows) || !rows.length) {
+                const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type: "application/json"});
+                downloadBlob(blob, `${lastResult.task || "result"}.json`);
+                return;
+            }
+
+            const headers = Object.keys(rows[0]);
+            let csv = headers.map(h => `"${h.replace(/"/g, '""')}"`).join(",") + "\n";
+
+            rows.forEach(row => {
+                const line = headers.map(h => {
+                    const val = row[h] == null ? "" : String(row[h]).replace(/"/g, '""');
+                    return `"${val}"`;
+                }).join(",");
+                csv += line + "\n";
+            });
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            downloadBlob(blob, `${lastResult.task || "data"}-results.csv`);
+        }
+
+        function downloadJSON() {
+            if (!lastResult) return;
+            const blob = new Blob([JSON.stringify(lastResult, null, 2)], {type: "application/json"});
+            downloadBlob(blob, `${lastResult.task || "analysis"}-results.json`);
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function copyJSON() {
+            if (!lastResult) return;
+            navigator.clipboard.writeText(JSON.stringify(lastResult, null, 2)).then(() => {
+                const orig = event.currentTarget?.textContent;
+                const btn = document.getElementById("copy-btn");
+                if (btn) {
+                    const t = btn.textContent;
+                    btn.textContent = "Copied!";
+                    setTimeout(() => btn.textContent = t, 1400);
+                }
+            }).catch(() => {
+                // fallback
+                prompt("Copy JSON:", JSON.stringify(lastResult, null, 2));
+            });
+        }
+
+        // History (local only)
+        const HISTORY_KEY = "sn_history_v2";
+
+        function saveToHistory(result) {
+            try {
+                let hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+                const entry = {
+                    ts: Date.now(),
+                    task: result.task,
+                    mode: result.mode,
+                    url: result.url || result.query,
+                    count: result.count || 0,
+                    data: result,
+                };
+                hist.unshift(entry);
+                hist = hist.slice(0, 12);
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+                renderHistory();
+            } catch (e) {}
+        }
+
+        function renderHistory() {
+            const section = document.getElementById("history-section");
+            const list = document.getElementById("history-list");
+            if (!list) return;
+
+            let hist = [];
+            try { hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch (e) {}
+
+            if (!hist.length) {
+                section.classList.add("hidden");
+                return;
+            }
+            section.classList.remove("hidden");
+
+            list.innerHTML = hist.map((h, i) => `
+                <div onclick="loadHistoryEntry(${i})" class="cursor-pointer glass rounded-2xl px-4 py-3 flex items-center justify-between text-sm hover:bg-white/5">
+                    <div>
+                        <span class="font-medium">${escapeHtml(h.task)}</span>
+                        <span class="text-xs ml-2 text-indigo-300/70">${escapeHtml(h.mode || '')}</span>
+                        <div class="text-xs text-indigo-300/60 mt-px truncate max-w-[280px]">${escapeHtml(h.url || '')}</div>
+                    </div>
+                    <div class="text-right text-xs tabular-nums text-indigo-300/70">
+                        ${h.count}<br>
+                        <span class="text-[10px]">items</span>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        window.loadHistoryEntry = function(index) {
+            let hist = [];
+            try { hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch(e){}
+            const entry = hist[index];
+            if (entry && entry.data) {
+                document.getElementById("results-section").classList.remove("hidden");
+                renderResults(entry.data);
+                window.scrollTo({top: 500, behavior: "smooth"});
+            }
+        };
+
+        function clearHistory() {
+            localStorage.removeItem(HISTORY_KEY);
+            document.getElementById("history-section").classList.add("hidden");
+        }
+
+        // Demo data (works even without login)
+        function loadDemoData() {
+            const demo = {
+                mode: "url",
+                task: "headlines",
+                url: "https://news.ycombinator.com",
+                page_title: "Hacker News",
+                count: 4,
+                headlines: [
+                    { tag: "H1", text: "Hacker News" },
+                    { tag: "H2", text: "New: Ask HN: What are you working on?" },
+                    { tag: "H2", text: "Show HN: An open source Streamlit + Netlify demo" },
+                    { tag: "H3", text: "Python FastAPI backend powering everything" }
+                ],
+                _demo: true
+            };
+            renderResults(demo);
+            document.dispatchEvent(new CustomEvent('scrapy:happy'));
+            emitSparkles(document.getElementById('scrapy-canvas') || document.body, 6);
+        }
+
+        // Form + Mode handling
+        let currentMode = "url";
+
+        function setInputMode(mode) {
+            currentMode = mode;
+            const urlGroup = document.getElementById("url-group");
+            const kwGroup = document.getElementById("keyword-group");
+            const urlBtn = document.getElementById("mode-url-btn");
+            const kwBtn = document.getElementById("mode-keyword-btn");
+
+            if (mode === "url") {
+                urlGroup.classList.remove("hidden");
+                kwGroup.classList.add("hidden");
+                urlBtn.classList.add("nav-active");
+                kwBtn.classList.remove("nav-active");
+            } else {
+                urlGroup.classList.add("hidden");
+                kwGroup.classList.remove("hidden");
+                urlBtn.classList.remove("nav-active");
+                kwBtn.classList.add("nav-active");
+            }
+            // Make Scrapy react
+            document.dispatchEvent(new CustomEvent('scrapy:curious'));
+            setTimeout(() => {
+                const bubble = document.getElementById('bubble-text');
+                if (bubble) bubble.textContent = mode === 'keyword' ? 'searching the web...' : 'direct page scrape!';
+            }, 300);
+        }
+
+        function setupForm() {
+            const form = document.getElementById("task-form");
+
+            // Mode buttons
+            document.getElementById("mode-url-btn").onclick = () => setInputMode("url");
+            document.getElementById("mode-keyword-btn").onclick = () => setInputMode("keyword");
+
+            // Main form
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                clearError();
+
+                if (!currentUser) {
+                    showError("Please log in first using the button in the top right.");
+                    if (window.netlifyIdentity) window.netlifyIdentity.open("login");
+                    return;
+                }
+
+                const task = document.getElementById("task-select").value;
+                let payload = { task };
+
+                if (currentMode === "url") {
+                    const url = document.getElementById("url-input").value.trim();
+                    if (!url) { showError("Enter a valid public URL."); return; }
+                    payload.url = url;
+                    payload.mode = "url";
+                } else {
+                    const q = document.getElementById("query-input").value.trim();
+                    if (!q) { showError("Enter a search term or keyword."); return; }
+                    payload.query = q;
+                    payload.mode = "keyword";
+                }
+
+                setLoading(true, "Running via Netlify...");
+
+                try {
+                    const result = await callBackend(payload);
+                    renderResults(result);
+                    document.dispatchEvent(new CustomEvent('scrapy:result', { detail: { count: result?.count || 0 } }));
+                    emitSparkles(document.getElementById('scrapy-canvas') || document.body, 8);
+                    saveToHistory(result);
+                    document.getElementById("history-section").classList.remove("hidden");
+                } catch (err) {
+                    showError(err.message || "Something went wrong");
+                } finally {
+                    setLoading(false);
+                }
+            });
+
+            // Demo
+            document.getElementById("demo-btn").onclick = () => {
+                loadDemoData();
+            };
+
+            // Download buttons
+            document.getElementById("csv-btn").onclick = () => { downloadCSV(); document.dispatchEvent(new CustomEvent('scrapy:happy')); };
+            document.getElementById("json-btn").onclick = () => { downloadJSON(); document.dispatchEvent(new CustomEvent('scrapy:happy')); };
+            document.getElementById("copy-btn").onclick = copyJSON;
+
+            // View toggles
+            document.getElementById("card-view-btn").onclick = () => switchView("cards");
+            document.getElementById("table-view-btn").onclick = () => switchView("table");
+
+            // History clear
+            document.getElementById("clear-history").onclick = clearHistory;
+        }
+
+        function initAuth() {
+            const identity = window.netlifyIdentity;
+
+            if (!identity) {
+                console.warn("Netlify Identity widget not loaded");
+                // Graceful fallback
+                currentUser = null;
+                renderAuthArea();
+                updateLoginState();
+                return;
+            }
+
+            identity.on("init", (user) => {
+                currentUser = user;
+                renderAuthArea();
+                updateLoginState();
+            });
+
+            identity.on("login", (user) => {
+                currentUser = user;
+                renderAuthArea();
+                updateLoginState();
+            });
+
+            identity.on("logout", () => {
+                currentUser = null;
+                renderAuthArea();
+                updateLoginState();
+            });
+
+            identity.on("error", (err) => console.error("Netlify Identity error:", err));
+
+            // Initial state
+            identity.init();
+            // After init it fires the 'init' event
+        }
+
+        function initApp() {
+            initTailwind();
+            setupForm();
+
+            // Default mode
+            setInputMode("url");
+
+            // Prefill nice example
+            const urlInput = document.getElementById("url-input");
+            if (urlInput && !urlInput.value) {
+                urlInput.value = "https://news.ycombinator.com";
+            }
+
+            // History render
+            renderHistory();
+
+            // Auth
+            initAuth();
+
+            // Initial state update (in case init already happened)
+            setTimeout(() => {
+                if (window.netlifyIdentity && window.netlifyIdentity.currentUser()) {
+                    currentUser = window.netlifyIdentity.currentUser();
+                }
+                renderAuthArea();
+                updateLoginState();
+            }, 120);
+
+            // Keyboard hint
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "/" && document.activeElement.tagName === "BODY") {
+                    e.preventDefault();
+                    document.getElementById("url-input")?.focus();
+                }
+            });
+
+            console.log("%c[StreamlitNetlifyCollab] Enhanced frontend ready", "color:#64748b");
+        }
+
+        // ========================================================
+        // === PIXEL SPRITE CHARACTER: "SCRAPY"                 ===
+        // Retro 8-bit style companion that reacts to everything.
+        // Multiple moods, task-specific looks, and engagement.
+        // ========================================================
+        let scrapy = {
+            canvas: null,
+            ctx: null,
+            frame: 0,
+            state: 'idle',       // idle | thinking | scanning | happy | curious
+            task: 'headlines',   // current task for visual modifiers
+            lastUpdate: Date.now(),
+            clickCount: 0,
+            mouse: { x: 0.5, y: 0.5 }   // relative coords 0-1 for eye tracking
+        };
+
+        function drawPixel(ctx, x, y, color, scale = 3) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * scale, y * scale, scale, scale);
+        }
+
+        // Draw Scrapy — cute 16x16 base pixel robot, scaled
+        // Now with mouse-following eyes for extra engagement!
+        function drawScrapy(ctx, scale, state = 'idle', task = 'headlines', tick = 0, mouse = {x: 0.5, y: 0.5}) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            const s = scale;
+            const t = tick % 60; // animation timer
+
+            // === Shadow ===
+            ctx.fillStyle = 'rgba(0,0,0,0.35)';
+            ctx.fillRect(7*s, 23*s, 10*s, 2*s);
+
+            // === Body (main chassis) ===
+            const bodyCol = '#475569';
+            ctx.fillStyle = bodyCol;
+            ctx.fillRect(6*s, 10*s, 12*s, 11*s);
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(7*s, 11*s, 10*s, 9*s);
+
+            // Body highlights + panel lines
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(7*s, 11*s, 2*s, 1*s);
+            ctx.fillRect(15*s, 12*s, 2*s, 2*s);
+
+            // Chest screen / data window
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(9*s, 13*s, 6*s, 5*s);
+            ctx.fillStyle = state === 'scanning' ? '#67e8f9' : (state === 'happy' ? '#a5f3fc' : '#1e2937');
+            ctx.fillRect(10*s, 14*s, 4*s, 3*s);
+
+            // Data lines in chest
+            ctx.fillStyle = state === 'scanning' ? '#22d3ee' : '#475569';
+            for (let i = 0; i < 3; i++) {
+                ctx.fillRect(10*s, (15 + i)*s, (2 + (tick + i) % 3)*s, 1);
+            }
+
+            // === Head ===
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(7*s, 4*s, 10*s, 7*s);
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(8*s, 5*s, 8*s, 5*s);
+
+            // Antenna
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(12*s, 2*s, 2*s, 3*s);
+            const bob = (state === 'idle') ? Math.sin(t / 8) * 0.6 : 0;
+            ctx.fillStyle = state === 'scanning' ? '#67e8f9' : '#a5b4fc';
+            drawPixel(ctx, 12.2, 1.3 + bob, ctx.fillStyle, s);
+
+            // === Eyes (now follow mouse) ===
+            let eyeColor = '#67e8f9';
+            let baseEyeY = 7;
+            if (state === 'happy') eyeColor = '#a5f3fc';
+            if (state === 'thinking') baseEyeY = 7.2;
+            if (state === 'scanning') eyeColor = '#22d3ee';
+
+            // Calculate eye offset based on mouse (relative 0-1 coords mapped to pixels)
+            const lookX = (mouse.x - 0.5) * 2.2;   // -1.1 to +1.1 range
+            const lookY = (mouse.y - 0.45) * 1.8;
+
+            // Left eye
+            ctx.fillStyle = eyeColor;
+            ctx.fillRect(9*s + lookX*s*0.6, (baseEyeY + lookY)*s, 2*s, 2*s);
+            // Right eye
+            ctx.fillRect(14*s + lookX*s*0.6, (baseEyeY + lookY)*s, 2*s, 2*s);
+
+            // Eye highlights / blink
+            if (state !== 'scanning' && Math.floor(t / 18) % 9 !== 2) {
+                ctx.fillStyle = '#e0f2fe';
+                ctx.fillRect(9*s + lookX*s*0.6, (baseEyeY + lookY)*s, 1*s, 1*s);
+                ctx.fillRect(14*s + lookX*s*0.6, (baseEyeY + lookY)*s, 1*s, 1*s);
+            }
+
+            // === Mouth / expression ===
+            ctx.fillStyle = '#1e2937';
+            if (state === 'happy') {
+                ctx.fillRect(10*s, 10*s, 4*s, 1*s);
+                ctx.fillRect(10*s, 11*s, 1*s, 1*s);
+                ctx.fillRect(13*s, 11*s, 1*s, 1*s);
+            } else if (state === 'thinking') {
+                ctx.fillRect(11*s, 10*s, 2*s, 1*s);
+            } else {
+                ctx.fillRect(10*s, 10*s, 4*s, 1*s);
+            }
+
+            // === Arms ===
+            const armSwing = (state === 'scanning') ? Math.sin(t / 4) * 1.5 : (state === 'happy' ? Math.sin(t / 5) * 1 : 0);
+            ctx.fillStyle = '#475569';
+            ctx.fillRect((4 + armSwing)*s, 12*s, 3*s, 4*s);
+            ctx.fillRect((17 - armSwing)*s, 12*s, 3*s, 4*s);
+
+            ctx.fillStyle = '#334155';
+            ctx.fillRect((4 + armSwing)*s, 14*s, 3*s, 1*s);
+
+            // === Task-specific visual accessories ===
+            ctx.fillStyle = '#e0f2fe';
+            if (task === 'headlines') {
+                ctx.fillRect(15*s, 4*s, 3*s, 2*s);
+                ctx.fillStyle = '#1e2937';
+                ctx.fillRect(15*s, 5*s, 2*s, 1);
+            } else if (task === 'prices') {
+                ctx.fillStyle = '#fcd34d';
+                ctx.fillRect(17*s, 10*s, 3*s, 3*s);
+                ctx.fillStyle = '#334155';
+                ctx.fillRect(17.5*s, 10.5*s, 2*s, 2*s);
+            } else if (task === 'links') {
+                ctx.fillStyle = '#67e8f9';
+                ctx.fillRect(8*s, 15*s, 2*s, 2*s);
+                ctx.fillRect(13*s, 15*s, 2*s, 2*s);
+            } else if (task === 'tables') {
+                ctx.fillStyle = '#64748b';
+                ctx.fillRect(10*s, 15*s, 1, 1);
+                ctx.fillRect(12*s, 15*s, 1, 1);
+                ctx.fillRect(11*s, 16*s, 1, 1);
+            } else if (task === 'meta') {
+                ctx.fillStyle = '#c026ff';
+                ctx.fillRect(7*s, 4*s, 2*s, 1*s);
+            }
+
+            // === Special effects per state ===
+            if (state === 'scanning') {
+                ctx.fillStyle = 'rgba(103,232,249,0.6)';
+                ctx.fillRect(13*s, 0, 1*s, 2*s);
+                ctx.fillStyle = 'rgba(103,232,249,0.25)';
+                ctx.fillRect(9*s, 2*s, 8*s, 1*s);
+            }
+
+            if (state === 'happy') {
+                const sparklePhase = (t % 12 < 6);
+                if (sparklePhase) {
+                    ctx.fillStyle = '#67e8f9';
+                    ctx.fillRect(5*s, 8*s, 1, 1);
+                    ctx.fillRect(18*s, 6*s, 1, 1);
+                    ctx.fillRect(4*s, 16*s, 1, 1);
+                }
+            }
+
+            if (state === 'thinking') {
+                ctx.fillStyle = '#64748b';
+                ctx.fillRect(18*s, 5*s, 3*s, 2*s);
+                ctx.fillRect(20*s, 4*s, 1*s, 1*s);
+            }
+        }
+
+        function setCharacterState(newState, newTask = null) {
+            scrapy.state = newState;
+            if (newTask) scrapy.task = newTask;
+
+            const moodEl = document.getElementById('character-mood');
+            if (moodEl) {
+                moodEl.textContent = newState.toUpperCase();
+                moodEl.className = `text-[9px] px-2 py-px rounded-full border text-cyan-300/80 bg-cyan-400/10 border-cyan-400/20`;
+                if (newState === 'happy') moodEl.className = `text-[9px] px-2 py-px rounded-full border text-emerald-300 bg-emerald-400/10 border-emerald-400/20`;
+                if (newState === 'scanning') moodEl.className = `text-[9px] px-2 py-px rounded-full border text-cyan-300 bg-cyan-400/20 border-cyan-400/30`;
+            }
+
+            // Update bubble text based on state
+            const bubble = document.getElementById('bubble-text');
+            if (bubble) {
+                const messages = {
+                    'idle': ['hi! ready to scrape?', 'waiting for data...', 'let’s find something cool'],
+                    'thinking': ['hmm...', 'interesting URL...', 'processing...'],
+                    'scanning': ['scanning page...', 'fetching content', 'beep boop'],
+                    'happy': ['nice results!', 'data acquired ✓', 'that was fun!'],
+                    'curious': ['what’s this?', 'tell me more...', 'ooh new task']
+                };
+                const arr = messages[newState] || messages['idle'];
+                bubble.textContent = arr[Math.floor(Math.random() * arr.length)];
+            }
+        }
+
+        function renderScrapy() {
+            if (!scrapy.ctx) return;
+            const now = Date.now();
+            if (now - scrapy.lastUpdate > 55) {
+                scrapy.frame++;
+                scrapy.lastUpdate = now;
+            }
+            drawScrapy(scrapy.ctx, 4, scrapy.state, scrapy.task, scrapy.frame, scrapy.mouse);
+            requestAnimationFrame(renderScrapy);
+        }
+
+        function initScrapyCharacter() {
+            scrapy.canvas = document.getElementById('scrapy-canvas');
+            if (!scrapy.canvas) return;
+
+            scrapy.ctx = scrapy.canvas.getContext('2d', { alpha: true });
+
+            // Initial draw
+            setCharacterState('idle', 'headlines');
+            drawScrapy(scrapy.ctx, 4, 'idle', 'headlines', 0, scrapy.mouse);
+
+            // Continuous animation loop
+            renderScrapy();
+
+            // === INTERACTIONS ===
+            scrapy.canvas.addEventListener('click', () => {
+                scrapy.clickCount++;
+
+                if (scrapy.clickCount % 3 === 0) {
+                    // Fun surprise: run demo data
+                    setCharacterState('happy');
+                    setTimeout(() => {
+                        const demoBtn = document.getElementById('demo-btn');
+                        if (demoBtn) demoBtn.click();
+                        setTimeout(() => setCharacterState('idle'), 1800);
+                    }, 120);
+                } else {
+                    setCharacterState('happy');
+                    // Emit some sparkles around the canvas
+                    emitSparkles(scrapy.canvas, 7);
+                    setTimeout(() => setCharacterState('idle'), 900);
+                }
+            });
+
+            // Hover reaction
+            scrapy.canvas.addEventListener('mouseenter', () => {
+                if (scrapy.state === 'idle') setCharacterState('curious');
+            });
+            scrapy.canvas.addEventListener('mouseleave', () => {
+                if (scrapy.state === 'curious') setCharacterState('idle');
+                // Reset eyes to center when mouse leaves
+                scrapy.mouse = { x: 0.5, y: 0.5 };
+            });
+
+            // === MOUSE TRACKING for eye engagement ===
+            scrapy.canvas.addEventListener('mousemove', (e) => {
+                const rect = scrapy.canvas.getBoundingClientRect();
+                const relX = (e.clientX - rect.left) / rect.width;
+                const relY = (e.clientY - rect.top) / rect.height;
+                scrapy.mouse = {
+                    x: Math.max(0, Math.min(1, relX)),
+                    y: Math.max(0, Math.min(1, relY))
+                };
+            });
+
+            // === Hook into the rest of the UI ===
+            // React to task changes
+            const taskSelect = document.getElementById('task-select');
+            if (taskSelect) {
+                taskSelect.addEventListener('change', (e) => {
+                    const newTask = e.target.value;
+                    setCharacterState('curious', newTask);
+                    setTimeout(() => {
+                        if (scrapy.state === 'curious') setCharacterState('idle', newTask);
+                    }, 1600);
+                });
+            }
+
+            // Listen for mode curious dispatch
+            document.addEventListener('scrapy:curious', () => {
+                if (scrapy.state === 'idle') setCharacterState('curious');
+                setTimeout(() => { 
+                    if (scrapy.state === 'curious') setCharacterState('idle'); 
+                }, 1400);
+            });
+
+            // React to input focus
+            const urlInput = document.getElementById('url-input');
+            const queryInput = document.getElementById('query-input');
+            [urlInput, queryInput].forEach(input => {
+                if (!input) return;
+                input.addEventListener('focus', () => setCharacterState('thinking'));
+                input.addEventListener('blur', () => {
+                    if (scrapy.state === 'thinking') setCharacterState('idle');
+                });
+            });
+
+            // Listen for custom events we can dispatch from the app
+            document.addEventListener('scrapy:scanning', () => setCharacterState('scanning'));
+            document.addEventListener('scrapy:happy', () => {
+                setCharacterState('happy');
+                setTimeout(() => setCharacterState('idle'), 2200);
+            });
+            document.addEventListener('scrapy:result', (e) => {
+                const count = e.detail?.count || 0;
+                setCharacterState('happy');
+                const bubble = document.getElementById('bubble-text');
+                if (bubble && count > 0) bubble.textContent = `${count} things found!`;
+                setTimeout(() => setCharacterState('idle'), 2600);
+            });
+
+            // Engage with result cards (inspection mode)
+            document.addEventListener('mouseover', (e) => {
+                if (e.target.closest('#result-container .result-card') && scrapy.state === 'idle') {
+                    setCharacterState('curious');
+                }
+            }, true);
+            document.addEventListener('mouseout', (e) => {
+                if (e.target.closest('#result-container .result-card') && scrapy.state === 'curious') {
+                    setCharacterState('idle');
+                }
+            }, true);
+
+            console.log('%c[Scrapy] Pixel companion initialized — many digital assets engaged!', 'color:#64748b');
+        }
+
+        function emitSparkles(aroundElement, amount = 6) {
+            const rect = aroundElement.getBoundingClientRect();
+            for (let i = 0; i < amount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'pixel-sparkle';
+                const size = 3 + Math.random() * 2;
+                sparkle.style.width = size + 'px';
+                sparkle.style.height = size + 'px';
+                sparkle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                sparkle.style.top = (rect.top + Math.random() * rect.height * 0.7) + 'px';
+                document.body.appendChild(sparkle);
+
+                setTimeout(() => sparkle.remove(), 720);
+            }
+        }
+
+        function enhanceWithScrapy() {
+            // Called from DOMContentLoaded
+            setTimeout(initScrapyCharacter, 220);
+        }
+
+        // Boot everything (only one listener)
+        window.addEventListener("DOMContentLoaded", () => {
+            initApp();
+            enhanceWithScrapy();
+        });
+    </script>
+</body>
+</html>
